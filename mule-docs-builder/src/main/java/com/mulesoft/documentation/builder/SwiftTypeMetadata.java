@@ -1,6 +1,7 @@
 package com.mulesoft.documentation.builder;
 
 import java.util.List;
+import java.util.regex.*;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
@@ -25,6 +26,7 @@ public class SwiftTypeMetadata {
         String result = "";
         result += getTitleMetadata(page);
         // result += getBodyMetadata(page);
+        result += getVersionMetadata(page);
         return result;
     }
 
@@ -32,6 +34,28 @@ public class SwiftTypeMetadata {
         String result = "<meta class=\"swiftype\" name=\"title\" data-type=\"string\" content=";
         result += "\"" + page.getTitle().trim() + "\" />\n";
         return result;
+    }
+    
+    public static String getVersionMetadata(AsciiDocPage page) {
+
+        //compiles a regex that grabs a forward slash, number, possible decimal, possible following number
+    	Pattern pattern = Pattern.compile("/\\d+.?\\d*");
+        Matcher hasVersion = pattern.matcher(page.getFilePath());
+
+    	if (hasVersion.find()) {
+            try {
+                String versionmeta = hasVersion.group(1);
+                String result = "<meta class=\"swiftype\" name=\"version\" data-type=\"float\" content=v";
+                result += "\"" + versionmeta;
+                return result;
+            }
+            catch(IndexOutOfBoundsException e) {
+                // DO SOMETHING
+            }
+    	}
+        return "";
+
+        //intended result is a number following character "v", e.g. v2.5
     }
 
     public static String getBodyMetadata(AsciiDocPage page) {
